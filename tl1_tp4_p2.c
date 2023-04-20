@@ -18,8 +18,8 @@ int isTareaFinished(int idTarea);
 int isRightChar(char *character);
 void moveFinishedTarea(int cantidad, Tarea *pendientes, Tarea **terminadas);
 void showLists(int cantidad, Tarea **pendientes, Tarea **terminadas);
-Tarea *findTareaById(int cantidad, Tarea **pendientes, int id);
-void findTareaByIdImpl(int cantidad, Tarea **pendientes);
+Tarea *BuscaTareaPorId(int cantidad, Tarea **pendientes, int id);
+void BuscaTareaPorPalabra(int cantidad, Tarea **pendientes);
 Tarea *findFirstTareaByInput(int cantidad, Tarea **pendientes, char *input);
 int isSameInput(Tarea *tarea, char *input);
 void findFirstTareaByInputImpl(int cantidad, Tarea **pendientes);
@@ -39,7 +39,7 @@ int main()
     chargeToDoList(cTareas, listaTareasPendientes);
     askIfDone(cTareas, listaTareasPendientes, listaTareasTerminadas);
     showLists(cTareas, listaTareasPendientes, listaTareasTerminadas);
-    findTareaByIdImpl(cTareas, listaTareasPendientes);
+    BuscaTareaPorPalabra(cTareas, listaTareasPendientes);
     findFirstTareaByInputImpl(cTareas, listaTareasPendientes);
 
     return 0;
@@ -210,13 +210,17 @@ Tarea *findFirstTareaByInput(int cantidad, Tarea **pendientes, char *input) // C
 
 void findFirstTareaByInputImpl(int cantidad, Tarea **pendientes) // Checked
 {
-    char *buff = (char *)malloc(sizeof(char) * 100);
+    char *input, *buff = (char *)malloc(sizeof(char) * 100);
     Tarea *findedTarea = (Tarea *)malloc(sizeof(Tarea));
     findedTarea = NULL;
     printf("Ingrese la palabra para buscar: ");
     gets(buff);
     fflush(stdin);
-    findedTarea = findFirstTareaByInput(cantidad, pendientes, buff);
+    input = (char *)malloc(sizeof(char) * (strlen(buff) + 1)); // strstr detecta los espacios extra dentro del buffer
+    strcpy(input, buff);                                       // Terminando en una Segmentation fault.
+    free(buff);
+    findedTarea = findFirstTareaByInput(cantidad, pendientes, input);
+    free(input);
     if (findedTarea != NULL)
     {
         printf("|     LISTA SELECCIONADA    |\n");
@@ -234,7 +238,7 @@ void findFirstTareaByInputImpl(int cantidad, Tarea **pendientes) // Checked
     free(findedTarea);
 }
 
-Tarea *findTareaById(int cantidad, Tarea **pendientes, int id) // Checked
+Tarea *BuscaTareaPorId(int cantidad, Tarea **pendientes, int id) // Checked
 {
     for (int i = 0; i < cantidad; i++)
     {
@@ -246,7 +250,7 @@ Tarea *findTareaById(int cantidad, Tarea **pendientes, int id) // Checked
     return NULL;
 }
 
-void findTareaByIdImpl(int cantidad, Tarea **pendientes) // Checked
+void BuscaTareaPorPalabra(int cantidad, Tarea **pendientes) // Checked
 {
     int num;
     Tarea *findedTarea = (Tarea *)malloc(sizeof(Tarea));
@@ -254,7 +258,7 @@ void findTareaByIdImpl(int cantidad, Tarea **pendientes) // Checked
     printf("Ingrese el id de la tarea que quiere buscar: ");
     scanf("%d", &num);
     fflush(stdin);
-    findedTarea = findTareaById(cantidad, pendientes, num);
+    findedTarea = BuscaTareaPorId(cantidad, pendientes, num);
     if (findedTarea != NULL)
     {
         printf("|     LISTA SELECCIONADA    |\n");
@@ -267,7 +271,7 @@ void findTareaByIdImpl(int cantidad, Tarea **pendientes) // Checked
     else
     {
         printf("El id de tarea ingresado, no pertenece a ninguna tarea Pendiente. Intentelo de nuevo.\n");
-        findTareaByIdImpl(cantidad, pendientes);
+        BuscaTareaPorPalabra(cantidad, pendientes);
     }
     free(findedTarea);
 }
