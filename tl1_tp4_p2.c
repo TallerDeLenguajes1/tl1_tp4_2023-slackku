@@ -18,6 +18,9 @@ int isTareaFinished(int idTarea);
 int isRightChar(char *character);
 void moveFinishedTarea(int cantidad, Tarea *pendientes, Tarea **terminadas);
 void showLists(int cantidad, Tarea **pendientes, Tarea **terminadas);
+Tarea *findFirstTareaByInput(int cantidad, Tarea **pendientes, char *input);
+int isSameInput(Tarea *tarea, char *input);
+void findFirstTareaByInputImpl(int cantidad, Tarea **pendientes);
 int main()
 {
     srand(time(NULL));
@@ -33,6 +36,7 @@ int main()
     chargeToDoList(cTareas, listaTareasPendientes);
     askIfDone(cTareas, listaTareasPendientes, listaTareasTerminadas);
     showLists(cTareas, listaTareasPendientes, listaTareasTerminadas);
+    findFirstTareaByInputImpl(cTareas, listaTareasPendientes);
 
     return 0;
 }
@@ -186,4 +190,42 @@ void showLists(int cantidad, Tarea **pendientes, Tarea **terminadas) // Checked
             printf("\n");
         }
     }
+}
+
+Tarea *findFirstTareaByInput(int cantidad, Tarea **pendientes, char *input) // Checked
+{
+    for (int i = 0; i < cantidad; i++)
+    {
+        if ((pendientes[i] != NULL) && (strstr(pendientes[i]->Descripcion, input)))
+        {
+            return pendientes[i];
+        }
+    }
+    return NULL;
+}
+
+void findFirstTareaByInputImpl(int cantidad, Tarea **pendientes) // Checked
+{
+    char *buff = (char *)malloc(sizeof(char) * 100);
+    Tarea *findedTarea = (Tarea *)malloc(sizeof(Tarea));
+    findedTarea = NULL;
+    printf("Ingrese la palabra para buscar: ");
+    gets(buff);
+    fflush(stdin);
+    findedTarea = findFirstTareaByInput(cantidad, pendientes, buff);
+    if (findedTarea != NULL)
+    {
+        printf("|     LISTA SELECCIONADA    |\n");
+        printf("|===========================|\n");
+        printf("|---     TAREA N: %2d     ---|\n", findedTarea->TareaID);
+        printf("|===========================|\n");
+        printf("Descripcion: %s\n", findedTarea->Descripcion);
+        printf("Duracion: %d\n", findedTarea->Duracion);
+    }
+    else
+    {
+        printf("La palabra ingresada para buscar no pertenece a ninguna tarea pendiente. Intentelo de nuevo.\n");
+        findFirstTareaByInputImpl(cantidad, pendientes);
+    }
+    free(findedTarea);
 }
