@@ -206,25 +206,25 @@ Tarea *findTareaById(int cantidad, Tarea **pendientes, int id) // Checked
 void findTareaByIdImpl(int cantidad, Tarea **pendientes) // Checked
 {
     int num;
-    Tarea *findTarea = (Tarea *)malloc(sizeof(Tarea));
-    findTarea = NULL;
+    Tarea *findedTarea = (Tarea *)malloc(sizeof(Tarea));
+    findedTarea = NULL;
     printf("Ingrese el id de la tarea que quiere buscar: ");
     scanf("%d", &num);
     fflush(stdin);
-    findTarea = findTareaById(cantidad, pendientes, num);
-    if (findTarea != NULL)
+    findedTarea = findTareaById(cantidad, pendientes, num);
+    if (findedTarea != NULL)
     {
         printf("|     LISTA SELECCIONADA    |\n");
         printf("|===========================|\n");
-        printf("|---     TAREA N: %2d     ---|\n", findTarea->TareaID);
+        printf("|---     TAREA N: %2d     ---|\n", findedTarea->TareaID);
         printf("|===========================|\n");
-        printf("Descripcion: %s\n", findTarea->Descripcion);
-        printf("Duracion: %d\n", findTarea->Duracion);
+        printf("Descripcion: %s\n", findedTarea->Descripcion);
+        printf("Duracion: %d\n", findedTarea->Duracion);
     }
     else
     {
         printf("El id de tarea ingresado, no pertenece a ninguna tarea Pendiente. Intentelo de nuevo.\n");
         findTareaByIdImpl(cantidad, pendientes);
     }
-    free(findTarea);
+    free(findedTarea);
 }
