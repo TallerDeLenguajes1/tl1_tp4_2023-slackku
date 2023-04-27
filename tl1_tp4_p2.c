@@ -9,20 +9,28 @@ typedef struct Tarea
     char *Descripcion;
     int Duracion; // entre 10 – 100
 } Tarea;
+struct Tnodo
+{
+    Tarea tarea;
+    struct Tnodo *sig;
+};
+typedef struct Tnodo Tnodo;
 
-void initializeLists(int cantidad, Tarea **pendientes, Tarea **terminadas);
-void chargeToDoList(int cantidad, Tarea **pendientes);
 void reqDuration(int *duracion);
-void askIfDone(int cantidad, Tarea **pendientes, Tarea **terminadas);
+void askIfDone(Tnodo *pendientes, Tnodo *terminadas);
 int isTareaFinished(int idTarea);
 int isRightChar(char *character);
-void moveFinishedTarea(int cantidad, Tarea *pendientes, Tarea **terminadas);
+void moveFinishedTarea(Tnodo **pendientes, Tnodo *terminadas);
 void showLists(int cantidad, Tarea **pendientes, Tarea **terminadas);
 Tarea *findByIdImpl(int cantidad, Tarea **pendientes, int id);
 void BuscaTareaPorPalabra(int cantidad, Tarea **pendientes);
 Tarea *findFirstTareaByInput(int cantidad, Tarea **pendientes, char *input);
-int isSameInput(Tarea *tarea, char *input);
 void BuscaTareaPorId(int cantidad, Tarea **pendientes);
+
+Tnodo *createEmptyLits();
+Tnodo *createNode(int id);
+void insertNodeOnList(Tnodo **start, Tnodo *nodo);
+Tarea createTarea(int id);
 int main()
 {
     srand(time(NULL));
@@ -32,64 +40,58 @@ int main()
     scanf("%d", &cTareas);
     fflush(stdin);
 
-    Tarea **listaTareasPendientes = (Tarea **)malloc(sizeof(Tarea *) * cTareas);
-    Tarea **listaTareasTerminadas = (Tarea **)malloc(sizeof(Tarea *) * cTareas);
+    Tnodo *startPendientes = createEmptyLits();
+    Tnodo *startTerminadas = createEmptyLits();
 
-    initializeLists(cTareas, listaTareasPendientes, listaTareasTerminadas);
-    chargeToDoList(cTareas, listaTareasPendientes);
-    askIfDone(cTareas, listaTareasPendientes, listaTareasTerminadas);
-    showLists(cTareas, listaTareasPendientes, listaTareasTerminadas);
-
-    printf("|===========================|\n");
-    printf("|        BUSCAR TAREA       |\n");
-    printf("|===========================|\n");
-    printf("--    Busqueda por ID    --\n");
-    BuscaTareaPorId(cTareas, listaTareasPendientes);
-    printf("--  Busqueda por palabra  --\n");
-    BuscaTareaPorPalabra(cTareas, listaTareasPendientes);
+    for (int i = 0; i < cTareas; i++)
+    {
+        Tnodo *nodo = createNode(i);
+        insertNodeOnList(&startPendientes, nodo);
+    }
 
     return 0;
 }
 
-void initializeLists(int cantidad, Tarea **pendientes, Tarea **terminadas) // Checked
+Tnodo *createEmptyLits() // Checked
 {
-    for (int i = 0; i < cantidad; i++) // Inicializa en cada puntero tarea, las tareas, en NULL
-    {
-        pendientes[i] = NULL;
-        terminadas[i] = NULL;
-    }
+    return NULL;
 }
 
-void chargeToDoList(int cantidad, Tarea **pendientes) // Checked
+Tnodo *createNode(int id) // Checked
 {
+    Tnodo *nodo = (Tnodo *)malloc(sizeof(Tnodo));
+    Tarea tarea = createTarea(id);
+    nodo->tarea = tarea;
+    nodo->sig = NULL;
+    return nodo;
+}
+
+void insertNodeOnList(Tnodo **start, Tnodo *nodo) // Checked
+{
+    nodo->sig = *start;
+    *start = nodo;
+}
+
+Tarea createTarea(int id) // Checked
+{
+    Tarea tarea;
+    char *buffer = malloc(sizeof(char) * 50);
+    int *duracion = (int *)malloc(sizeof(int));
     fflush(stdin);
     printf("|===========================|\n");
     printf("|---    Cargar Tareas    ---|\n");
     printf("|===========================|\n");
+    tarea.TareaID = id + 1;
+    printf("Tarea N: %d\n", tarea.TareaID);
+    printf("Ingrese la descripcion: ");
+    gets(buffer);
+    tarea.Descripcion = (char *)malloc(sizeof(char) * (strlen(buffer) + 1));
+    strcpy(tarea.Descripcion, buffer);
+    fflush(stdin);
+    reqDuration(duracion);
 
-    for (int i = 0; i < cantidad; i++)
-    {
-        printf("Tarea N: %d\n", i + 1);
-
-        int *duracion = (int *)malloc(sizeof(int));
-        char *buffer = malloc(sizeof(char) * 50);
-
-        printf("Ingrese la descripcion: ");
-        gets(buffer);
-        fflush(stdin);
-
-        pendientes[i] = (Tarea *)malloc(sizeof(Tarea)); // A cada fila del arreglo de arreglo pendientes, le asigno memoria dinamica
-        pendientes[i]->TareaID = i + 1;
-
-        pendientes[i]->Descripcion = malloc((strlen(buffer) + 1) * sizeof(char));
-        strcpy(pendientes[i]->Descripcion, buffer);
-        free(buffer);
-        reqDuration(duracion);
-
-        pendientes[i]->Duracion = *duracion;
-        free(duracion);
-        printf("---------------------------\n");
-    }
+    printf("---------------------------\n");
+    free(buffer);
 }
 
 void reqDuration(int *duracion) // Checked
@@ -109,24 +111,24 @@ void reqDuration(int *duracion) // Checked
     }
 }
 
-void askIfDone(int cantidad, Tarea **pendientes, Tarea **terminadas) // Checked
+void askIfDone(Tnodo *pendientes, Tnodo *terminadas) // Checked
 {
-    for (int i = 0; i < cantidad; i++)
+    Tnodo *aux = pendientes;
+    while (aux)
     {
         printf("|===========================|\n");
-        printf("|---     TAREA N: %2d     ---|\n", pendientes[i]->TareaID);
+        printf("|---     TAREA N: %2d     ---|\n", pendientes->tarea.TareaID);
         printf("|===========================|\n");
         printf("Descripcion: ");
-        puts(pendientes[i]->Descripcion);
-        printf("Duracion: %d\n", pendientes[i]->Duracion);
+        puts(pendientes->tarea.Descripcion);
+        printf("Duracion: %d\n", pendientes->tarea.Duracion);
         int isFinishedResult;
-        isFinishedResult = isTareaFinished(pendientes[i]->TareaID);
+        isFinishedResult = isTareaFinished(pendientes->tarea.TareaID);
         if (isFinishedResult)
         {
-            moveFinishedTarea(cantidad, pendientes[i], terminadas);
-            pendientes[i] = NULL;
-            // Una vez movida la tarea pendiente a terminada, pendiente queda en null
+            moveFinishedTarea(pendientes, terminadas);
         }
+        aux->sig = aux;
     }
 }
 
@@ -160,16 +162,15 @@ int isRightChar(char *character) // Checked
     return ((*character == 'y') || (*character == 'n'));
 }
 
-void moveFinishedTarea(int cantidad, Tarea *pendientes, Tarea **terminadas) // Checked
+void moveFinishedTarea(Tnodo **pendientes, Tnodo *terminadas) // Checked
 {
-    for (int i = 0; i < cantidad; i++)
+
+    while (*pendientes)
     {
-        if (terminadas[i] == NULL) // Si ese espacio de Terminadas es nulo, lo sobreescribo
+        if (terminadas->sig == NULL) // Si ese espacio de Terminadas es nulo, lo sobreescribo
         {
-            terminadas[i] = (Tarea *)malloc(sizeof(Tarea));
-            terminadas[i] = pendientes;
-            i = cantidad;
         }
+        *(pendientes)->sig = *pendientes;
     }
 }
 
